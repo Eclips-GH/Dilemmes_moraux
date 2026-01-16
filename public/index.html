@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description"
+    content="Réponds à des dilemmes éthiques et découvre ton profil moral à travers un résultat détaillé (scores, radar et récapitulatif des réponses)." />
+  <meta name="theme-color" content="#0b0d10" />
+
+  <!-- Open Graph (partage réseaux) -->
+  <meta property="og:title" content="Dilemmes Moraux" />
+  <meta property="og:description"
+    content="Réponds à des dilemmes éthiques et découvre ton profil moral (scores, radar, récapitulatif)." />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="fr_CH" />
+  <meta property="og:image" content="/logo.png" />
+
+  <link rel="icon" href="/favicon.png" />
+  <title>Dilemmes Moraux</title>
+
+  <!-- IMPORTANT : chemins absolus -->
+  <link rel="stylesheet" href="/style.css" />
+
+  <!-- Librairies -->
+  <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- App JS -->
+  <script defer src="/app.js"></script>
+</head>
+
+<body>
+  <header class="container">
+    <div class="brand">
+      <button id="logoBtn" class="logoBtn" aria-label="Retour au menu et réinitialisation">
+        <img src="/logo.png" alt="Logo Dilemmes moraux" class="logo">
+      </button>
+
+      <div class="title">
+        <h1>Dilemmes moraux</h1>
+        <p class="muted text-strong">Test de dilemmes éthiques.</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- CONFIG -->
+    <section class="card" id="configSection">
+      <h2>Configuration</h2>
+
+      <div class="grid2">
+        <label class="field">
+          <span class="text-strong">Nom d'affichage</span>
+          <input id="userName" type="text" placeholder="Ex : Martin" maxlength="32" />
+        </label>
+
+        <label class="field">
+          <span class="text-strong">Type de test</span>
+          <select id="mode">
+            <option value="full">Test complet (30 questions)</option>
+            <option value="fast">Rapide (12 questions)</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="actions wrap">
+        <button id="startBtn" class="btn primary">Commencer</button>
+        <button id="resumeBtn" class="btn" style="display:none;">Reprendre</button>
+        <button id="resetBtn" class="btn danger outline">Réinitialiser</button>
+      </div>
+
+      <hr class="sep" />
+
+      <h3>Exports</h3>
+      <div class="actions wrap">
+        <button id="dlQuestionsPdfBtn" class="btn">
+          Télécharger le questionnaire (PDF)
+        </button>
+        <button id="dlQuestionsJsonBtn" class="btn">
+          Télécharger le questionnaire (JSON)
+        </button>
+      </div>
+
+
+
+    </section>
+
+    <!-- QUIZ -->
+    <section id="quizSection" class="card" style="display:none;">
+      <div class="quizTop">
+        <div>
+          <h2 id="quizTitle">Question</h2>
+        </div>
+
+        <div class="quizRight">
+          <div class="quizProgress muted" id="progressText">0 / 0</div>
+
+          <div class="quizNav">
+            <button id="prevBtn" class="btn outline">Précédent</button>
+            <button id="nextBtn" class="btn primary">Suivant</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="questionBox" class="questionBox"></div>
+
+      <div class="actions">
+        <button id="finishBtn" class="btn primary" style="display:none;">Terminer</button>
+      </div>
+    </section>
+
+    <!-- RESULTAT -->
+    <section id="resultSection" class="card" style="display:none;">
+      <div class="resultTop">
+        <div>
+          <h2>Résultat</h2>
+          <p class="muted" id="resultSubtitle"></p>
+        </div>
+      </div>
+
+      <!-- 1) Questionnaire / réponses -->
+      <details class="answersBlock">
+        <summary>Questionnaire / mes réponses</summary>
+        <div id="answersReview" class="answersReview"></div>
+      </details>
+
+      <hr class="sep" />
+
+      <!-- 2) Barres de scores -->
+      <div class="panel scorePanel">
+        <h3>Scores (pourcentages)</h3>
+        <div id="scoreBars" class="scoreList"></div>
+      </div>
+
+      <hr class="sep" />
+
+      <!-- 3) Ton profil (gauche) + Graphique (droite) -->
+      <div class="resultGrid3">
+        <div class="panel">
+          <h3>Ton profil</h3>
+          <div id="profileTitle" class="big"></div>
+          <div id="profileDesc" class="muted"></div>
+          <div id="chips" class="chips"></div>
+        </div>
+
+        <div class="panel">
+          <h3>Graphique</h3>
+          <div class="radarWrap">
+            <canvas id="radarChart" aria-label="Graphique radar des traits de personnalité" role="img"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <hr class="sep" />
+
+      <!-- Exports (déplacés ici depuis Configuration) -->
+      <h3>Exports</h3>
+      <div class="actions wrap">
+        <button id="dlResultPdfBtn" class="btn" disabled>
+          Télécharger résultat + réponses (PDF)
+        </button>
+        <button id="dlResultJsonBtn" class="btn" disabled>
+          Télécharger résultat + réponses (JSON)
+        </button>
+      </div>
+
+
+
+      <hr class="sep" />
+    </section>
+
+
+    <footer class="footer">
+      <div class="muted small">
+        <p>
+          Projet encore en développement.
+          Me contacter par
+          <a href="mailto:corpataux.cesar@outlook.com">mail</a>
+          pour toute proposition, demande d’aide ou signalement de bug.
+        </p>
+
+        <p>
+          © <time datetime="2026">2026</time> Dilemmes Moraux. Tous droits réservés. — Auteur : César Corpataux
+        </p>
+
+      </div>
+    </footer>
+
+
+  </main>
+</body>
+
+</html>

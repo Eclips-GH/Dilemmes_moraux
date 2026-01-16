@@ -1,0 +1,604 @@
+/* Base UI */
+:root {
+  /* Fonds BIEN colorés */
+  --bg1: #b8d4e8;
+  /* bleu clair affirmé */
+  --bg2: #b7dfd0;
+  /* vert sécurité */
+  --bg3: #d8cfc1;
+  /* beige chaud */
+
+  /* Cartes nettement teintées */
+  --card: rgba(198, 224, 232, 0.98);
+  --card2: rgba(186, 215, 206, 0.95);
+
+  /* Texte */
+  --text: #16262e;
+  --muted: rgba(22, 38, 46, .65);
+  --line: rgba(22, 38, 46, .22);
+
+  /* Accents */
+  --accent: #1f5fa0;
+  /* bleu confiance */
+  --accent2: #2f8f7a;
+  /* vert calme */
+  --good: #2f8f6a;
+  --warn: #c39b3c;
+  --bad: #b14a4a;
+
+  --radius: 20px;
+  --shadow: 0 18px 38px rgba(15, 40, 60, .25);
+  --shadow2: 0 12px 28px rgba(15, 40, 60, .20);
+
+  --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+}
+
+
+
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background:
+    radial-gradient(1300px 800px at 5% 0%, rgba(31, 95, 160, .55), transparent 60%),
+    radial-gradient(1200px 700px at 95% 5%, rgba(47, 143, 122, .55), transparent 60%),
+    radial-gradient(1000px 600px at 50% 120%, rgba(216, 207, 193, .60), transparent 60%),
+    linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 55%, var(--bg3) 100%);
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  color: var(--text);
+  min-height: 100vh;
+  background: transparent;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.container {
+  width: min(980px, calc(100% - 32px));
+  margin: 28px auto 60px;
+  padding: 0;
+}
+
+.brand {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 100px 1fr 100px;
+  align-items: center;
+  column-gap: 14px;
+}
+
+.logo {
+  height: 100px;
+  width: auto;
+  justify-self: start;
+}
+
+.title {
+  justify-self: center;
+  text-align: center;
+}
+
+h1 {
+  font-size: clamp(32px, 4vw, 44px);
+  line-height: 1.1;
+  margin: 0;
+  text-align: center;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+  max-width: 70ch;
+}
+
+/* Cartes plus “claires / safe” */
+.card {
+  background: linear-gradient(180deg, var(--card), var(--card2));
+  border: 1px solid rgba(22, 38, 46, .22);
+  box-shadow: var(--shadow);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin: 14px 0 22px;
+  backdrop-filter: blur(10px);
+}
+
+.panel {
+  background: rgba(255, 255, 255, .75);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: var(--shadow2);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.field span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Inputs plus “appli pro” */
+.input,
+input[type="text"],
+select {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(11, 18, 32, .14);
+  background: rgba(255, 255, 255, .92);
+  color: var(--text);
+  outline: none;
+  min-width: 220px;
+  width: 100%;
+  box-shadow: 0 1px 0 rgba(11, 18, 32, .04) inset;
+}
+
+.input:focus,
+input[type="text"]:focus,
+select:focus,
+textarea:focus {
+  border-color: rgba(37, 99, 235, .45);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .18);
+}
+
+/* Boutons plus vifs et rassurants */
+.btn,
+button {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(11, 18, 32, .14);
+  background: rgba(255, 255, 255, .85);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform .05s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
+  box-shadow: 0 8px 18px rgba(2, 12, 27, .06);
+}
+
+.btn:hover,
+button:hover {
+  background: rgba(255, 255, 255, .98);
+  border-color: rgba(11, 18, 32, .18);
+  box-shadow: 0 10px 22px rgba(2, 12, 27, .10);
+}
+
+.btn:active,
+button:active {
+  transform: translateY(1px);
+}
+
+.btn.primary {
+  background: linear-gradient(180deg, #2f6fb5, #1f5fa0);
+  color: #f0f6fa;
+  border: none;
+}
+
+.btn.primary:hover {
+  background: linear-gradient(180deg, #3880c9, #246bb8);
+}
+
+.btn.ghost {
+  background: transparent;
+  box-shadow: none;
+}
+
+.btn:disabled,
+button:disabled {
+  opacity: .50;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn.outline {
+  background: transparent;
+  box-shadow: none;
+}
+
+.btn.danger {
+  border-color: rgba(239, 68, 68, .35);
+}
+
+.actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.wrap {
+  flex-wrap: wrap;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.sep {
+  height: 1px;
+  border: 0;
+  background: var(--line);
+  margin: 14px 0;
+}
+
+.muted {
+  color: var(--muted);
+  text-align: center;
+}
+
+.small {
+  font-size: 13px;
+}
+
+.footer {
+  margin-top: 22px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+/* ===== Quiz ===== */
+.questionBox {
+  margin-top: 14px;
+}
+
+.options {
+  display: grid;
+  gap: 12px;
+}
+
+.option {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .92), rgba(255, 255, 255, .78));
+  border: 1px solid rgba(11, 18, 32, .12);
+  border-radius: 14px;
+  padding: 14px 14px;
+  box-shadow: var(--shadow2);
+  cursor: pointer;
+  transition: transform .08s ease, border-color .12s ease, background .12s ease, box-shadow .12s ease;
+  outline: none;
+}
+
+.option:hover {
+  transform: translateY(-1px);
+  border-color: rgba(37, 99, 235, .35);
+  box-shadow: 0 14px 28px rgba(2, 12, 27, .12);
+}
+
+.option:active {
+  transform: translateY(0px);
+}
+
+.option:focus-visible {
+  border-color: rgba(37, 99, 235, .55);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, .14), 0 14px 28px rgba(2, 12, 27, .12);
+}
+
+.optionTitle {
+  font-weight: 800;
+  letter-spacing: .01em;
+  margin-bottom: 6px;
+}
+
+.optionDesc {
+  color: var(--muted);
+  line-height: 1.45;
+  font-size: 14px;
+}
+
+.option.selected {
+  border-color: rgba(22, 163, 74, .45);
+  background: linear-gradient(180deg, rgba(22, 163, 74, .10), rgba(255, 255, 255, .78));
+  box-shadow: 0 0 0 4px rgba(22, 163, 74, .14), 0 14px 28px rgba(2, 12, 27, .12);
+}
+
+.quizTop {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.quizNav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.quizNav .btn {
+  padding: 10px 12px;
+}
+
+/* ===== Résultats : barres de progression ===== */
+.scoreList {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.scoreRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.bar {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(11, 18, 32, .10);
+  border: 1px solid rgba(11, 18, 32, .10);
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, .85);
+  transition: width 1500ms ease;
+}
+
+/* ===== Résultat > Ton profil (mise en forme) ===== */
+#profileTitle.big {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: .01em;
+  margin: 8px 0 6px;
+}
+
+#profileDesc {
+  margin: 0;
+  margin-top: 6px;
+  line-height: 1.55;
+  color: var(--muted);
+  max-width: 70ch;
+  text-align: left;
+}
+
+#chips.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(11, 18, 32, .12);
+  background: rgba(255, 255, 255, .75);
+  color: rgba(11, 18, 32, .92);
+  font-size: 13px;
+  line-height: 1;
+  user-select: none;
+}
+
+.chip:hover {
+  border-color: rgba(37, 99, 235, .22);
+  background: rgba(37, 99, 235, .08);
+}
+
+.chip::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, .95);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .16);
+}
+
+/* ===== Résultat : ordre + layout ===== */
+.resultGrid3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.answersBlock summary {
+  cursor: pointer;
+  user-select: none;
+}
+
+/* IMPORTANT : zone sombre pour le radar (car le radar est dessiné en blanc dans app.js) */
+.radarWrap {
+  height: 320px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+}
+
+
+.answerCard {
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(11, 18, 32, .10);
+  background: rgba(255, 255, 255, .72);
+  margin-top: 10px;
+}
+
+.answerCard .q {
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.answerCard .a {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.quizRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.quizProgress {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.text-strong {
+  font-weight: 600;
+  /* ou 700 si tu veux plus marqué */
+}
+
+/* =========================
+   Hover boutons de téléchargement
+   ========================= */
+
+#dlQuestionsPdfBtn,
+#dlQuestionsJsonBtn,
+#dlResultPdfBtn,
+#dlResultJsonBtn {
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform .15s ease,
+    background .2s ease,
+    box-shadow .2s ease,
+    color .2s ease;
+}
+
+/* Hover visuel */
+#dlQuestionsPdfBtn:hover,
+#dlQuestionsJsonBtn:hover,
+#dlResultPdfBtn:hover,
+#dlResultJsonBtn:hover {
+  background: linear-gradient(180deg,
+      rgba(37, 99, 235, 0.15),
+      rgba(37, 99, 235, 0.05));
+  color: #0b1c33;
+  transform: translateY(-2px);
+  box-shadow: none;
+}
+
+/* Effet "brillance" discret */
+#dlQuestionsPdfBtn::after,
+#dlQuestionsJsonBtn::after,
+#dlResultPdfBtn::after,
+#dlResultJsonBtn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 120%;
+  height: 100%;
+  background: linear-gradient(120deg,
+      transparent,
+      rgba(255, 255, 255, 0.35),
+      transparent);
+  transition: left 1.1s ease;
+}
+
+#dlQuestionsPdfBtn:hover::after,
+#dlQuestionsJsonBtn:hover::after,
+#dlResultPdfBtn:hover::after,
+#dlResultJsonBtn:hover::after {
+  left: 120%;
+}
+
+/* Désactivé = aucun hover */
+#dlResultPdfBtn:disabled:hover,
+#dlResultJsonBtn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+  background: rgba(255, 255, 255, .85);
+}
+
+/* =========================
+   Logo cliquable — SANS style bouton
+   ========================= */
+
+.logoBtn {
+  all: unset;              /* 💥 enlève TOUT le style button par défaut */
+  display: inline-block;
+  cursor: pointer;
+  line-height: 0;          /* supprime espace fantôme */
+}
+
+.logoBtn:hover,
+.logoBtn:active {
+  background: none;
+  box-shadow: none;
+}
+
+.logoBtn:focus-visible {
+  outline: 2px solid rgba(31, 95, 160, 0.6);
+  outline-offset: 4px;
+  border-radius: 10px;
+}
+
+/* Le logo reste le seul élément visible */
+.logoBtn img {
+  display: block;
+}
+
+
+
+@media (max-width: 780px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+
+  .brand {
+    grid-template-columns: 1fr;
+    row-gap: 10px;
+    justify-items: center;
+  }
+
+  .logo {
+    justify-self: center;
+    height: 72px;
+  }
+
+  .resultGrid3 {
+    grid-template-columns: 1fr;
+  }
+
+  .radarWrap {
+    height: 320px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    box-shadow: none;
+  }
+
+
+
+  .quizTop {
+    align-items: flex-start;
+  }
+
+  .quizNav {
+    justify-content: flex-start;
+  }
+}
