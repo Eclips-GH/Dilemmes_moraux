@@ -7,6 +7,19 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.19.2"
-  }
+    "express": "^4.22.1"
+  },
+  "description": "**Dilemmes Moraux** est une application web interactive qui propose des dilemmes éthiques\r dans lesquels l'utilisateur doit faire un choix. Chaque décision permet d'explorer\r les valeurs morales et les conséquences hypothétiques associées.",
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Eclips-GH/Dilemmes_moraux.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Eclips-GH/Dilemmes_moraux/issues"
+  },
+  "homepage": "https://github.com/Eclips-GH/Dilemmes_moraux#readme"
 }
