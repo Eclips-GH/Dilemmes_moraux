@@ -1,16 +1,17 @@
 @echo off
-title Démarrage du site - Dilemmes Moraux
+title ON - Dilemmes Moraux
 cd /d "%~dp0"
 
+REM Assure le port attendu par le routeur
 set PORT=8000
 
-echo ===============================
-echo   DEMARRAGE DU SITE WEB
-echo ===============================
+REM Démarre (ou redémarre proprement) via PM2
+pm2 start server.js --name dilemmes
+pm2 save
+
 echo.
-echo Site accessible sur :
-echo - Local : http://localhost:8000
-echo - Internet : http://85.90.23.242:18473
+echo ✅ Site ALLUME
+echo Local   : http://localhost:8000
+echo Internet: http://85.90.23.242:18473
 echo.
-node server.js
 pause

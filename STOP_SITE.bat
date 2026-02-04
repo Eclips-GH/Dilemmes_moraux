@@ -1,15 +1,10 @@
 @echo off
-title Arrêt du site - Dilemmes Moraux
+title OFF - Dilemmes Moraux
 
-echo ===============================
-echo   ARRET DU SITE WEB
-echo ===============================
-echo.
-
-for /f "tokens=5" %%a in ('netstat -ano ^| find ":8000"') do (
-    taskkill /PID %%a /F
-)
+pm2 stop dilemmes
+pm2 save
 
 echo.
-echo Site arrêté.
+echo ⛔ Site ETEINT
+echo.
 pause
