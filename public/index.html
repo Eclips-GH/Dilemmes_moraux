@@ -22,9 +22,9 @@
   <!-- IMPORTANT : chemins absolus -->
   <link rel="stylesheet" href="/style.css" />
 
-  <!-- Librairies -->
-  <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Bibliothèques locales et empreintes générées par npm run vendor -->
+  <script defer src="/vendor/jspdf.4.2.1.umd.min.js" integrity="sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3"></script>
+  <script defer src="/vendor/chart.4.5.1.umd.min.js" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ"></script>
 
   <!-- App JS -->
   <script defer src="/app.js"></script>
@@ -64,6 +64,12 @@
           </select>
         </label>
       </div>
+
+      <label class="small">
+        <input id="persistProgress" type="checkbox" checked />
+        Conserver ma progression dans ce navigateur
+      </label>
+      <p id="storageNotice" class="muted small" role="status" aria-live="polite"></p>
 
       <div class="actions wrap">
         <button id="startBtn" class="btn primary">Commencer</button>

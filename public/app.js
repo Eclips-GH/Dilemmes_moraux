@@ -5,13 +5,23 @@
 
 const STORAGE_KEY = "dm_local_v3";
 // Bump this number if you change the shape of the saved state.
-const STATE_SCHEMA_VERSION = 1;
+const STATE_SCHEMA_VERSION = 2;
+const STORAGE_PREFERENCE_KEY = "dm_storage_preference_v1";
+const STORAGE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+const MAX_SAVED_LENGTH = 64 * 1024;
+let persistProgress = true;
 
 /* =========================
    Utils
    ========================= */
 const $ = (id) => document.getElementById(id);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const textElement = (tag, className, text) => {
+  const element = document.createElement(tag);
+  element.className = className;
+  element.textContent = text;
+  return element;
+};
 
 /* =========================
    Axes
@@ -297,31 +307,109 @@ function getQuestionSet(mode) {
 }
 
 function saveState() {
-  const payload = { schemaVersion: STATE_SCHEMA_VERSION, ...state };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-}
-function loadState() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return false;
+  const savedAt = Date.now();
+  // Ne stocke ni HTML, ni textes de questions, ni scores ou profil dérivés.
+  const payload = {
+    schemaVersion: STATE_SCHEMA_VERSION, savedAt, expiresAt: savedAt + STORAGE_TTL_MS,
+    userName: state.userName, mode: state.mode, index: state.index,
+    answers: state.answers, finished: state.finished, resultDate: state.result?.date || null,
+  };
   try {
-    const parsed = JSON.parse(raw);
-    if (parsed?.schemaVersion !== STATE_SCHEMA_VERSION) {
-      // Incompatible saved data => reset.
-      localStorage.removeItem(STORAGE_KEY);
-      return false;
-    }
-    // Remove schemaVersion from assignment.
-    const { schemaVersion, ...rest } = parsed;
-    Object.assign(state, rest);
+    const storage = getStorage(persistProgress);
+    if (!storage) throw new Error("Stockage indisponible");
+    storage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    updateStorageNotice();
     return true;
   } catch {
+    updateStorageNotice("La sauvegarde est indisponible. Le test fonctionne, mais la progression peut être perdue à la fermeture.");
     return false;
   }
 }
+
+function getStorage(persistent) {
+  try { return persistent ? window.localStorage : window.sessionStorage; }
+  catch { return null; }
+}
+
+function readStorage(persistent, key) {
+  try { return getStorage(persistent)?.getItem(key) || null; }
+  catch { return null; }
+}
+
+function removeSaved(persistent) {
+  try {
+    const storage = getStorage(persistent);
+    if (!storage) return false;
+    storage.removeItem(STORAGE_KEY);
+    return true;
+  } catch { return false; }
+}
+
+function updateStorageNotice(message) {
+  const notice = $("storageNotice");
+  if (notice) notice.textContent = message || (persistProgress
+    ? "La reprise expire 30 jours après la dernière sauvegarde ; les données expirées sont effacées à la prochaine ouverture. Réinitialiser les efface. Utilise un pseudonyme sur un appareil partagé."
+    : "La progression est limitée à cet onglet (30 jours maximum). Réinitialiser l’efface ; la restauration d’un onglet peut conserver sa session.");
+}
+
+function validateSaved(parsed) {
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+  const legacy = parsed.schemaVersion === 1;
+  if (!legacy && parsed.schemaVersion !== STATE_SCHEMA_VERSION) return null;
+  if (!["full", "fast"].includes(parsed.mode) || typeof parsed.userName !== "string" ||
+      parsed.userName.length > 32 || typeof parsed.finished !== "boolean") return null;
+  const qIds = getQuestionSet(parsed.mode);
+  if (!Number.isInteger(parsed.index) || parsed.index < 0 || parsed.index >= qIds.length) return null;
+  if (legacy && (!Array.isArray(parsed.qIds) || parsed.qIds.length !== qIds.length ||
+      parsed.qIds.some((id, i) => id !== qIds[i]))) return null;
+  if (!legacy && (!Number.isSafeInteger(parsed.savedAt) || !Number.isSafeInteger(parsed.expiresAt) ||
+      parsed.savedAt < 0 || parsed.savedAt > Date.now() + 60000 || parsed.expiresAt <= Date.now() ||
+      parsed.expiresAt < parsed.savedAt || parsed.expiresAt > parsed.savedAt + STORAGE_TTL_MS)) return null;
+  if (!parsed.answers || typeof parsed.answers !== "object" || Array.isArray(parsed.answers)) return null;
+  const answers = {};
+  for (const [qid, key] of Object.entries(parsed.answers)) {
+    const question = QUESTIONS.find(q => q.id === qid);
+    if (!qIds.includes(qid) || typeof key !== "string" || !question?.options.some(o => o.key === key)) return null;
+    answers[qid] = key;
+  }
+  if (parsed.finished && Object.keys(answers).length !== qIds.length) return null;
+  const date = legacy ? parsed.result?.date : parsed.resultDate;
+  const resultDate = typeof date === "string" && date.length <= 40 && Number.isFinite(Date.parse(date))
+    ? new Date(date).toISOString() : null;
+  return { userName: parsed.userName, mode: parsed.mode, qIds, index: parsed.index,
+    answers, finished: parsed.finished, resultDate, legacy };
+}
+
+function loadState() {
+  // Une sauvegarde d'onglet a priorité sur une ancienne sauvegarde persistante.
+  for (const persistent of [false, true]) {
+    const raw = readStorage(persistent, STORAGE_KEY);
+    if (!raw) continue;
+    try {
+      if (raw.length > MAX_SAVED_LENGTH) throw new Error("Sauvegarde trop volumineuse");
+      const valid = validateSaved(JSON.parse(raw));
+      if (!valid) throw new Error("Sauvegarde invalide ou expirée");
+      state.userName = valid.userName; state.mode = valid.mode; state.qIds = valid.qIds;
+      state.index = valid.index; state.answers = valid.answers; state.finished = valid.finished;
+      state.result = state.finished ? computeResult() : null;
+      if (state.result && valid.resultDate) state.result.date = valid.resultDate;
+      persistProgress = persistent;
+      if (valid.legacy) saveState(); // Migration sans perdre les réponses valides.
+      return true;
+    } catch {
+      removeSaved(persistent);
+      updateStorageNotice("Une sauvegarde invalide ou expirée a été ignorée. Tu peux commencer un nouveau test.");
+    }
+  }
+  return false;
+}
 function resetState() {
-  localStorage.removeItem(STORAGE_KEY);
+  const localRemoved = removeSaved(true);
+  const sessionRemoved = removeSaved(false);
   state.userName = ""; state.mode = "full"; state.qIds = []; state.index = 0;
   state.answers = {}; state.finished = false; state.result = null;
+  updateStorageNotice(localRemoved && sessionRemoved ? undefined
+    : "Le test a été réinitialisé. Le navigateur bloque l’accès au stockage : vérifie ses réglages pour effacer une éventuelle sauvegarde.");
 }
 
 function resetAndGoToConfig() {
@@ -338,6 +426,7 @@ function resetAndGoToConfig() {
   }
 
   showConfig();
+  $("resumeBtn").style.display = "none";
 }
 
 
@@ -441,7 +530,7 @@ function computeResult() {
    ========================= */
 function renderRadar(normScores) {
   const canvas = $("radarChart");
-  if (!canvas) return;
+  if (!canvas || typeof Chart !== "function") return;
 
   const labels = AXES.map(a => a.label);
   const data = AXES.map(a => normScores[a.key] ?? 0);
@@ -528,7 +617,7 @@ function renderQuestion() {
   $("progressText").textContent = `${state.index + 1} / ${state.qIds.length}`;
 
   const box = $("questionBox");
-  box.innerHTML = "";
+  box.replaceChildren();
 
   const p = document.createElement("div");
   p.className = "muted text-strong"; // <- GRAS ICI
@@ -547,10 +636,8 @@ function renderQuestion() {
     card.className = "option" + (chosenKey === opt.key ? " selected" : "");
     card.tabIndex = 0;
 
-    card.innerHTML = `
-      <div class="optionTitle text-strong">${opt.key} — ${opt.title}</div>
-      <div class="optionDesc text-strong">${opt.desc}</div>
-    `;
+    card.appendChild(textElement("div", "optionTitle text-strong", `${opt.key} — ${opt.title}`));
+    card.appendChild(textElement("div", "optionDesc text-strong", opt.desc));
 
     const choose = () => {
       state.answers[qid] = opt.key;
@@ -585,8 +672,8 @@ function renderQuestion() {
 
 
 function startNew() {
-  state.userName = $("userName").value.trim();
-  state.mode = $("mode").value || "full";
+  state.userName = $("userName").value.trim().slice(0, 32);
+  state.mode = $("mode").value === "fast" ? "fast" : "full";
   state.qIds = getQuestionSet(state.mode);
   state.index = 0;
   state.answers = {};
@@ -619,6 +706,7 @@ function resume() {
 }
 
 function goNext() {
+  if (!state.answers[state.qIds[state.index]]) return;
   if (state.index < state.qIds.length - 1) {
     state.index++; saveState(); renderQuestion();
   }
@@ -630,6 +718,7 @@ function goPrev() {
 }
 
 function finish() {
+  if (!state.qIds.length || !state.qIds.every(id => state.answers[id])) return;
   state.result = computeResult();
   state.finished = true;
   saveState();
@@ -655,7 +744,7 @@ function renderResult() {
   $("profileDesc").textContent = res.profile.desc;
 
   const chips = $("chips");
-  chips.innerHTML = "";
+  chips.replaceChildren();
   (res.profile.tags || []).forEach(tag => {
     const c = document.createElement("div");
     c.className = "chip";
@@ -668,14 +757,17 @@ function renderResult() {
 
   // (2) Barres de scores — maintenant dans #scoreBars
   const scoreList = $("scoreBars");
-  scoreList.innerHTML = "";
+  scoreList.replaceChildren();
 
   for (const a of AXES) {
     const val = res.scores.norm[a.key] ?? 0;
 
     const row = document.createElement("div");
     row.className = "scoreRow";
-    row.innerHTML = `<div>${a.label}</div><div><strong>${val}%</strong></div>`;
+    row.appendChild(textElement("div", "", a.label));
+    const valueBox = document.createElement("div");
+    valueBox.appendChild(textElement("strong", "", `${val}%`));
+    row.appendChild(valueBox);
     scoreList.appendChild(row);
 
     const bar = document.createElement("div");
@@ -695,16 +787,19 @@ function renderResult() {
 
   // (1) Questionnaire / réponses
   const review = $("answersReview");
-  review.innerHTML = "";
+  review.replaceChildren();
   for (const a of res.answers) {
     const card = document.createElement("div");
     card.className = "answerCard";
-    card.innerHTML = `
-      <div class="q">${a.title}</div>
-      <div class="a">${a.text}</div>
-      <div class="a" style="margin-top:6px;"><strong>Réponse :</strong> ${a.chosenKey ? `${a.chosenKey} — ${a.chosenTitle}` : "—"}</div>
-      ${a.chosenDesc ? `<div class="a">${a.chosenDesc}</div>` : ""}
-    `;
+    card.appendChild(textElement("div", "q", a.title));
+    card.appendChild(textElement("div", "a", a.text));
+    const response = document.createElement("div");
+    response.className = "a";
+    response.style.marginTop = "6px";
+    response.appendChild(textElement("strong", "", "Réponse :"));
+    response.appendChild(document.createTextNode(` ${a.chosenKey ? `${a.chosenKey} — ${a.chosenTitle}` : "—"}`));
+    card.appendChild(response);
+    if (a.chosenDesc) card.appendChild(textElement("div", "a", a.chosenDesc));
     review.appendChild(card);
   }
 
@@ -847,23 +942,14 @@ async function dlResultPdf() {
    Init
    ========================= */
 async function init() {
-  const hasSaved = loadState();
-  if (hasSaved && state.qIds?.length) {
-    $("resumeBtn").style.display = "inline-block";
-    $("userName").value = state.userName || "";
-    $("mode").value = state.mode || "full";
-    if (state.finished && state.result) {
-      renderResult();
-    }
-  }
-
+  // Les actions restent disponibles même si une reprise échoue.
   $("startBtn").addEventListener("click", startNew);
   $("resumeBtn").addEventListener("click", resume);
   $("resetBtn").addEventListener("click", () => {
 
 
-    resetState();
-    location.reload();
+    resetAndGoToConfig();
+    $("resumeBtn").style.display = "none";
   });
 
   $("nextBtn").addEventListener("click", goNext);
@@ -886,7 +972,36 @@ async function init() {
       }
     });
   }
-
+  persistProgress = readStorage(true, STORAGE_PREFERENCE_KEY) !== "temporary";
+  updateStorageNotice();
+  const hasSaved = loadState();
+  const choice = $("persistProgress");
+  if (choice) {
+    choice.checked = persistProgress;
+    choice.addEventListener("change", () => {
+      const previous = persistProgress;
+      persistProgress = choice.checked;
+      if (previous === persistProgress) { updateStorageNotice(); return; }
+      // Écrire la destination avant de retirer l'ancienne sauvegarde.
+      if (state.qIds.length) {
+        if (saveState()) {
+          if (!removeSaved(previous)) updateStorageNotice("Le nouveau mode est actif, mais l’ancienne sauvegarde n’a pas pu être effacée. Vérifie le stockage du navigateur.");
+        } else {
+          persistProgress = previous;
+          choice.checked = previous;
+        }
+      } else {
+        updateStorageNotice();
+      }
+      try { getStorage(true)?.setItem(STORAGE_PREFERENCE_KEY, persistProgress ? "persistent" : "temporary"); } catch {}
+    });
+  }
+  if (hasSaved && state.qIds.length) {
+    $("resumeBtn").style.display = "inline-block";
+    $("userName").value = state.userName;
+    $("mode").value = state.mode;
+    if (state.finished) renderResult();
+  }
 }
 
 window.addEventListener("DOMContentLoaded", init);
