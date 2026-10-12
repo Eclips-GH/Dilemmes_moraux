@@ -1,0 +1,25 @@
+# Exemple à adapter et valider avant toute publication.
+# Ne pas exécuter ce fichier sans avoir choisi le domaine et autorisé le déploiement.
+# SITE_DOMAIN doit être le nom de domaine correspondant à PUBLIC_ORIGIN côté Node.
+# Le proxy et Node doivent être sur la même machine.
+{$SITE_DOMAIN} {
+    request_body {
+        max_size 1MB
+    }
+
+    reverse_proxy 127.0.0.1:8000 {
+        # Écrase les valeurs que pourrait fournir un visiteur.
+        header_up -Forwarded
+        header_up Host {host}
+        header_up X-Forwarded-Host {host}
+        header_up X-Forwarded-Proto {scheme}
+        header_up X-Forwarded-For {remote_host}
+
+        transport http {
+            dial_timeout 3s
+            response_header_timeout 15s
+            read_timeout 30s
+            write_timeout 30s
+        }
+    }
+}

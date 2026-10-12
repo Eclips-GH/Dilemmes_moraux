@@ -4,10 +4,28 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "postinstall": "node scripts/prepare-vendor.mjs",
+    "vendor": "node scripts/prepare-vendor.mjs",
+    "test": "node --test tests/server.test.mjs tests/browser-state.test.mjs",
+    "test:e2e": "playwright test",
+    "check:security": "npm audit --audit-level=low"
+  },
+  "engines": {
+    "node": ">=22 <23 || >=24 <25 || >=26 <27"
   },
   "dependencies": {
-    "express": "^4.22.1"
+    "chart.js": "4.5.1",
+    "express": "4.22.3",
+    "express-rate-limit": "8.7.1",
+    "helmet": "8.3.0",
+    "jspdf": "4.2.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0"
+  },
+  "overrides": {
+    "proxy-addr": "2.0.8"
   },
   "description": "**Dilemmes Moraux** est une application web interactive qui propose des dilemmes éthiques\r dans lesquels l'utilisateur doit faire un choix. Chaque décision permet d'explorer\r les valeurs morales et les conséquences hypothétiques associées.",
   "main": "server.js",

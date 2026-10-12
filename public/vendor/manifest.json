@@ -1,0 +1,12 @@
+{
+  "jspdf": {
+    "version": "4.2.1",
+    "file": "jspdf.4.2.1.umd.min.js",
+    "integrity": "sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3"
+  },
+  "chart.js": {
+    "version": "4.5.1",
+    "file": "chart.4.5.1.umd.min.js",
+    "integrity": "sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ"
+  }
+}
