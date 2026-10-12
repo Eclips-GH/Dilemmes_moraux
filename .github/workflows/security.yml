@@ -1,0 +1,34 @@
+
+name: Analyse de securite
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  securite:
+    name: Audit npm et tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Installer les dependances
+        run: npm ci
+
+      - name: Verifier les vulnerabilites
+        run: npm audit --audit-level=high
+
+      - name: Executer les tests
+        run: npm test --if-present
